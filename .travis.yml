@@ -178,29 +178,37 @@ matrix:
       compiler: clang
       env: COMPILER='clang++' CPP14=1
 
-    # 6/ Special builds
+    # 6/ Special builds -- examples, coverage, valgrind, etc.
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: *all_sources
+          packages: ['lcov', 'g++-7']
+      env: COMPILER='g++-7' CPP14=1 EXAMPLES=1 COVERAGE=1
+
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          packages: ['clang-3.8', 'lcov']
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty
+      env: COMPILER='clang++-3.8' EXAMPLES=1 COVERAGE=1
+
     - os: linux
       compiler: gcc
       addons:
         apt:
           sources: *all_sources
           packages: ['valgrind', 'lcov', 'g++-7']
-      env: COMPILER='g++-7' CPP14=1 EXAMPLES=1 COVERAGE=1 VALGRIND=1
-
-    - os: linux
-      compiler: clang
-      addons:
-        apt:
-          packages: ['clang-3.8', 'valgrind', 'lcov']
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty
-      env: COMPILER='clang++-3.8' EXAMPLES=1 COVERAGE=1 VALGRIND=1
-
+      env: COMPILER='g++-7' CPP14=1 VALGRIND=1      
+      
     - os: osx
       osx_image: xcode9.1
       compiler: clang
-      env: COMPILER='clang++' CPP14=1 EXAMPLES=1 COVERAGE=1 VALGRIND=1
+      env: COMPILER='clang++' CPP14=1 EXAMPLES=1 COVERAGE=1
 
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
@@ -233,7 +241,7 @@ script:
     make -j 2
     CTEST_OUTPUT_ON_FAILURE=1 ctest -j 2
     # Coverage collection does not work for OS X atm
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]] && [["${COVERAGE}" == "1"]]; then
       make gcov
       make lcov
       bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
