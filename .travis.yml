@@ -183,6 +183,26 @@ matrix:
       compiler: clang
       env: COMPILER='clang++' CPP14=1
 
+    # 6/ Examples builds
+    - os: osx
+      osx_image: xcode9.1
+      compiler: clang
+      env: COMPILER='clang++' CPP14=1 EXAMPLES=1
+
+    - os: linux
+      compiler: gcc
+      addons: *gcc7
+      env: COMPILER='g++-7' CPP14=1 EXAMPLES=1
+
+    - os: linux
+      compiler: clang
+      addons:
+          apt:
+              packages: ['clang-3.8', 'valgrind', 'lcov', 'libstdc++-6-dev']
+              sources:
+                  - ubuntu-toolchain-r-test
+                  - llvm-toolchain-trusty
+      env: COMPILER='clang++-3.8' CPP14=1 EXAMPLES=1
 
 install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
@@ -204,7 +224,7 @@ before_script:
 
   - |
     # Use Debug builds for running Valgrind and building examples
-    cmake -H. -BBuild-Debug -DCMAKE_BUILD_TYPE=Debug -Wdev -DUSE_CPP14=${CPP14} -DCATCH_USE_VALGRIND=${VALGRIND} -DCATCH_BUILD_EXAMPLES=ON -DCATCH_ENABLE_COVERAGE=ON
+    cmake -H. -BBuild-Debug -DCMAKE_BUILD_TYPE=Debug -Wdev -DUSE_CPP14=${CPP14} -DCATCH_USE_VALGRIND=${VALGRIND} -DCATCH_BUILD_EXAMPLES={EXAMPLES} -DCATCH_ENABLE_COVERAGE=ON
     # Don't bother with release build for coverage build
     cmake -H. -BBuild-Release -DCMAKE_BUILD_TYPE=Release -Wdev -DUSE_CPP14=${CPP14}
 
